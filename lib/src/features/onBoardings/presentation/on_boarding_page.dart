@@ -1,5 +1,6 @@
 import 'package:devs/src/features/onBoardings/presentation/page_view/page_view1.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../../../core/common/constants/font_strings.dart';
@@ -52,7 +53,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
   @override
   void dispose() {
     _pageController.dispose();
-    super.dispose() ;
+    super.dispose();
   }
 
   @override
@@ -60,15 +61,15 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // PAGEVIEW
+          /// PAGEVIEW
           PageView(
             controller: _pageController,
             children: pages,
           ),
 
-          // PAGE INDICATOR
+          /// PAGE INDICATOR
           Positioned(
-            bottom: 170,
+            bottom: 160.h,
             left: 0,
             right: 0,
             child: Center(
@@ -76,9 +77,9 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                 controller: _pageController,
                 count: pages.length,
                 effect: WormEffect(
-                  dotHeight: 10,
-                  dotWidth: 10,
-                  spacing: 10,
+                  dotHeight: 8.h,
+                  dotWidth: 8.w,
+                  spacing: 8.w,
                   activeDotColor: Colors.white,
                   dotColor: Colors.grey.shade800,
                 ),
@@ -86,20 +87,20 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
             ),
           ),
 
-          // MORPHING BUTTON (arrow → full button)
+          /// MORPHING BUTTON
           Positioned(
-            bottom: 40,
-            right: 25,
+            bottom: 40.h,
+            right: 21,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               curve: Curves.fastOutSlowIn,
-              width: isLastPage ? 360 : 60,
-              height: 60,
+              width: isLastPage ? 350.w : 60.w,
+              height: 60.h,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.r),
                   ),
                 ),
                 onPressed: () {
@@ -120,9 +121,9 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                       ? Text(
                     "Get Started",
                     key: const ValueKey('text'),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.black,
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontFamily: AppFontStrings.pjsBold,
                     ),
                   )
@@ -130,7 +131,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                     Icons.arrow_forward_rounded,
                     key: const ValueKey('icon'),
                     color: Colors.black,
-                    size: 28,
+                    size: 28.sp,
                   ),
                 ),
               ),
