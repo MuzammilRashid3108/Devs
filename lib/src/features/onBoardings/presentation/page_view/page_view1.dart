@@ -41,12 +41,7 @@ class PageView1 extends StatelessWidget {
             child: Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 25.sp,
-                fontFamily: AppFontStrings.pjsBold,
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(context).textTheme.titleLarge
             ),
           ),
 

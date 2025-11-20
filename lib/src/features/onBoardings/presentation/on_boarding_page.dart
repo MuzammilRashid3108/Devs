@@ -58,6 +58,9 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -80,8 +83,8 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                   dotHeight: 8.h,
                   dotWidth: 8.w,
                   spacing: 8.w,
-                  activeDotColor: Colors.white,
-                  dotColor: Colors.grey.shade800,
+                  activeDotColor: isDarkMode ?Colors.white : Colors.black,
+                  dotColor: isDarkMode ? Colors.grey.shade800 : Colors.grey,
                 ),
               ),
             ),
@@ -98,7 +101,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
               height: 60.h,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
+                  backgroundColor: isDarkMode ? Colors.white : Colors.black,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16.r),
                   ),
@@ -122,7 +125,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                     "Get Started",
                     key: const ValueKey('text'),
                     style: TextStyle(
-                      color: Colors.black,
+                      color: isDarkMode ? Colors.black : Colors.white,
                       fontSize: 18.sp,
                       fontFamily: AppFontStrings.pjsBold,
                     ),
@@ -130,7 +133,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                       : Icon(
                     Icons.arrow_forward_rounded,
                     key: const ValueKey('icon'),
-                    color: Colors.black,
+                    color: isDarkMode ? Colors.black : Colors.white,
                     size: 28.sp,
                   ),
                 ),
