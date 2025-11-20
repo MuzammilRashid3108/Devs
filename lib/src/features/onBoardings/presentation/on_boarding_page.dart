@@ -1,6 +1,7 @@
 import 'package:devs/src/features/onBoardings/presentation/page_view/page_view1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../../../core/common/constants/font_strings.dart';
@@ -115,6 +116,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                   } else {
                     print("Get Started Pressed!");
                   }
+                  context.push('/welcome');
                 },
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
