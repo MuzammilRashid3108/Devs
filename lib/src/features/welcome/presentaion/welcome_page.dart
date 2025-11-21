@@ -1,9 +1,11 @@
+import 'package:devs/src/core/common/constants/image_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/common/constants/app_colors.dart';
+import '../../../core/common/constants/font_strings.dart';
 import '../wiedgets/auth_buttons.dart';
 
 
@@ -21,12 +23,13 @@ class WelcomePage extends StatelessWidget {
           child: Column(
             children: [
               Center(
+                child: Image(image: AssetImage(AppImageStrings.logoDark),height: 300,width: 300,),
               ),
-              SizedBox(height: 30),
+              SizedBox(height: 0),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18.0),
                 child: Text(
-                  'Welcome to BrainBox',
+                  'Welcome to Devs',
                   style: Theme.of(context).textTheme.headlineLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -51,7 +54,11 @@ class WelcomePage extends StatelessWidget {
                     ),
                     child: Text(
                       "Log in",
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.black : Colors.white,
+                        fontSize: 18.sp,
+                        fontFamily: AppFontStrings.pjsBold,
+                      ),
                     ),
                   ),
                 ),
@@ -97,7 +104,7 @@ class WelcomePage extends StatelessWidget {
               ),
               SizedBox(height: 32.r),
               Padding(
-                padding: const EdgeInsets.only(left: 25.0),
+                padding: const EdgeInsets.only(left: 23.0),
                 child: AuthButtons(),
               ),
             ],
