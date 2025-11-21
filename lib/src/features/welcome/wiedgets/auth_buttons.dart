@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/common/constants/app_colors.dart';
+import '../../auth/services/auth_services.dart';
 
 
 class AuthButtons extends StatelessWidget {
@@ -19,7 +20,12 @@ class AuthButtons extends StatelessWidget {
             height: 60.h,
             width: 165.w,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                final user = await AuthService().signInWithGoogle();
+                if (user != null) {
+                  print("Signed in as: ${user.displayName}");
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.googleButton.withOpacity(0.25),
                 shape: RoundedRectangleBorder(

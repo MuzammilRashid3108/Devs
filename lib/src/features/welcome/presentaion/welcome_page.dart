@@ -19,18 +19,18 @@ class WelcomePage extends StatelessWidget {
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.only(top: 137.0),
+          padding: const EdgeInsets.only(top: 130.0),
           child: Column(
             children: [
               Center(
-                child: Image(image: AssetImage(AppImageStrings.logoDark),height: 300,width: 300,),
+                child: Image(image: AssetImage(isDarkMode ? AppImageStrings.logoDark : AppImageStrings.logoLight),height: 300,width: 300,),
               ),
               SizedBox(height: 0),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18.0),
                 child: Text(
                   'Welcome to Devs',
-                  style: Theme.of(context).textTheme.headlineLarge,
+                  style: Theme.of(context).textTheme.titleLarge,
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -82,14 +82,19 @@ class WelcomePage extends StatelessWidget {
                       ),
                       backgroundColor: isDarkMode
                           ? Colors.transparent
-                          : Colors.transparent,
+                          : Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     child: Text(
                       "Sign up",
-                      style: Theme.of(context).textTheme.labelMedium,
+                        style:
+                        TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                          fontSize: 18.sp,
+                          fontFamily: AppFontStrings.pjsBold,
+                        ),
                     ),
                   ),
                 ),
