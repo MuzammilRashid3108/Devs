@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 
+import '../../../../core/common/constants/font_strings.dart';
 import '../../../welcome/wiedgets/auth_buttons.dart';
 
 class SignupPage extends StatefulWidget {
@@ -53,7 +54,8 @@ class _SignupPageState extends State<SignupPage> {
                         padding: const EdgeInsets.only(left: 25.0, right: 25).r,
                         child: Text(
                           'Create Your\nAccount',
-                          style: Theme.of(context).textTheme.labelLarge,
+                          style: TextStyle(fontSize: 38,fontFamily: AppFontStrings.pjsBold,fontWeight: FontWeight.w600),
+
                         ),
                       ),
                       SizedBox(height: 48),
@@ -281,7 +283,7 @@ class _SignupPageState extends State<SignupPage> {
                     ),
                     SizedBox(height: 30),
                     Padding(
-                      padding: const EdgeInsets.only(left: 25.0),
+                      padding: const EdgeInsets.only(left: 23.0),
                       child: AuthButtons(),
                     ),
                   ],
