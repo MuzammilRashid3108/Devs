@@ -8,7 +8,6 @@ import '../../../core/common/constants/app_colors.dart';
 import '../../../core/common/constants/font_strings.dart';
 import '../wiedgets/auth_buttons.dart';
 
-
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
 
@@ -19,22 +18,46 @@ class WelcomePage extends StatelessWidget {
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.only(top: 130.0),
+          padding: const EdgeInsets.only(top: 150.0),
           child: Column(
             children: [
               Center(
-                child: Image(image: AssetImage(isDarkMode ? AppImageStrings.logoDark : AppImageStrings.logoLight),height: 300,width: 300,),
+                child: Image(
+                  image: AssetImage(
+                    isDarkMode
+                        ? AppImageStrings.logoTrLight
+                        : AppImageStrings.logoTrDark,
+                  ),
+                  height: 100,
+                ),
               ),
-              SizedBox(height: 0),
+              SizedBox(height: 40),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18.0),
                 child: Text(
                   'Welcome to Devs',
-                  style: Theme.of(context).textTheme.titleLarge,
-                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                    fontSize: 33.9,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: AppFontStrings.pjsBold
+                  ),
                 ),
               ),
-              SizedBox(height: 75),
+              SizedBox(height: 20,),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                child: Text(
+                  "Where ideas evolve into real applications.Empowering you to code smarter, faster, and better.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xff787878),
+                    fontSize: 16.sp,
+                    fontFamily: AppFontStrings.pjsBold,
+                  ),
+                ),
+              ),
+              SizedBox(height: 50),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 25.0),
                 child: SizedBox(
@@ -53,7 +76,7 @@ class WelcomePage extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      "Log in",
+                      "Log In",
                       style: TextStyle(
                         color: isDarkMode ? Colors.black : Colors.white,
                         fontSize: 18.sp,
@@ -89,12 +112,11 @@ class WelcomePage extends StatelessWidget {
                     ),
                     child: Text(
                       "Sign up",
-                        style:
-                        TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black,
-                          fontSize: 18.sp,
-                          fontFamily: AppFontStrings.pjsBold,
-                        ),
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                        fontSize: 18.sp,
+                        fontFamily: AppFontStrings.pjsBold,
+                      ),
                     ),
                   ),
                 ),

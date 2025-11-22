@@ -85,7 +85,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                   dotWidth: 8.w,
                   spacing: 8.w,
                   activeDotColor: isDarkMode ? Colors.white : Colors.black,
-                  dotColor: isDarkMode ? Colors.grey.shade800 : Colors.grey,
+                  dotColor: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade600,
                 ),
               ),
             ),

@@ -2,6 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
+
+  //Google Auth
+
   final _auth = FirebaseAuth.instance;
   final _googleSignIn = GoogleSignIn();
 
@@ -21,8 +24,7 @@ class AuthService {
       );
 
       // Step 4: Login to Firebase
-      UserCredential userCred =
-      await _auth.signInWithCredential(credential);
+      UserCredential userCred = await _auth.signInWithCredential(credential);
 
       return userCred.user;
     } catch (e) {
@@ -35,4 +37,6 @@ class AuthService {
     await _googleSignIn.signOut();
     await _auth.signOut();
   }
+
+
 }

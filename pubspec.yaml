@@ -45,6 +45,7 @@ dependencies:
   smooth_page_indicator: ^1.2.1
   flutter_screenutil: ^5.9.3
   google_sign_in: ^6.1.6
+  flutter_facebook_auth: ^7.1.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -75,6 +76,7 @@ flutter:
     - assets/logo/dv_logo4.png
     - assets/logo/dv_logo5.png
     - assets/logo/dk_dv_logo.png
+    - assets/logo/
     - assets/onBoarding/
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -93,6 +95,11 @@ flutter:
       fonts:
         - asset: assets/fonts/PlusJakartaSans-Bold.ttf
         - asset: assets/fonts/PlusJakartaSans-ExtraBold.ttf
+        - asset: assets/fonts/PlusJakartaSans-Regular.ttf
+        - asset: assets/fonts/PlusJakartaSans-Light.ttf
+        - asset: assets/fonts/PlusJakartaSans-SemiBold.ttf
+        - asset: assets/fonts/PlusJakartaSans-Medium.ttf
+        - asset: assets/fonts/PlusJakartaSans-ExtraLight.ttf
 
   #
   # For details regarding fonts from package dependencies,
