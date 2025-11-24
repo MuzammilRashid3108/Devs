@@ -18,7 +18,7 @@ class WelcomePage extends StatelessWidget {
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.only(top: 150.0),
+          padding: const EdgeInsets.only(top: 180.0),
           child: Column(
             children: [
               Center(
@@ -35,29 +35,41 @@ class WelcomePage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18.0),
                 child: Text(
-                  'Welcome to Devs',
+                  'Welcome to',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black,
                     fontSize: 33.9,
                     fontWeight: FontWeight.w600,
-                    fontFamily: AppFontStrings.pjsBold
-                  ),
-                ),
-              ),
-              SizedBox(height: 20,),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                child: Text(
-                  "Where ideas evolve into real applications.Empowering you to code smarter, faster, and better.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: const Color(0xff787878),
-                    fontSize: 16.sp,
                     fontFamily: AppFontStrings.pjsBold,
                   ),
                 ),
               ),
-              SizedBox(height: 50),
+              SizedBox(height: 15,),
+              Text(
+                'Heaven of Nerds',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                  fontSize: 33.9,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: AppFontStrings.pjsBold,
+                ),
+              ),
+              SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                // child: Text(
+                //   "Where ideas evolve into real applications.Empowering you to code smarter, faster, and better.",
+                //   textAlign: TextAlign.center,
+                //   style: TextStyle(
+                //     color: const Color(0xff787878),
+                //     fontSize: 16.sp,
+                //     fontFamily: AppFontStrings.pjsBold,
+                //   ),
+                // ),
+              ),
+              SizedBox(height: 40),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 25.0),
                 child: SizedBox(
@@ -72,7 +84,7 @@ class WelcomePage extends StatelessWidget {
                           ? Color(0xffFFFFFF)
                           : AppColors.darkBackground,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(60),
                       ),
                     ),
                     child: Text(
@@ -97,17 +109,17 @@ class WelcomePage extends StatelessWidget {
                       context.push('/signup');
                     },
                     style: ElevatedButton.styleFrom(
-                      side: BorderSide(
-                        color: isDarkMode
-                            ? Color(0xffFFFFFF)
-                            : AppColors.darkBackground,
-                        width: 2,
-                      ),
+                      // side: BorderSide(
+                      //   color: isDarkMode
+                      //       ? Color(0xffFFFFFF)
+                      //       : AppColors.darkBackground,
+                      //   width: 2,
+                      // ),
                       backgroundColor: isDarkMode
-                          ? Colors.transparent
-                          : Colors.white,
+                          ? Colors.grey.shade900
+                          : Colors.grey.shade300,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(60),
                       ),
                     ),
                     child: Text(
