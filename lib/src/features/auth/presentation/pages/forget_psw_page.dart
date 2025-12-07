@@ -48,10 +48,11 @@ class _ForgetPsPageState extends State<ForgetPsPage> {
                   SizedBox(height: 8),
                   Text(
                     'Select which contact details should we use to reset your password',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       color: Color(0xffACADB9),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w400,
+                      fontFamily: AppFontStrings.pjsBold
                     ),
                   ),
                   SizedBox(height: 45),
@@ -190,7 +191,7 @@ class _ForgetPsPageState extends State<ForgetPsPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 0.0),
                       child: ElevatedButton(
                         onPressed: () {
-                          context.push('/emailOtp');
+                          context.push('/verification');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isDarkMode

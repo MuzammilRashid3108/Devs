@@ -1,6 +1,7 @@
 import 'package:devs/src/features/auth/presentation/pages/forget_psw_page.dart';
 import 'package:devs/src/features/auth/presentation/pages/login_page.dart';
 import 'package:devs/src/features/auth/presentation/pages/signup_page.dart';
+import 'package:devs/src/features/auth/presentation/pages/verification_page.dart';
 import 'package:devs/src/features/onBoardings/presentation/on_boarding_page.dart';
 import 'package:devs/src/features/welcome/presentaion/welcome_page.dart';
 import 'package:go_router/go_router.dart';
@@ -14,5 +15,6 @@ final appRoutes = GoRouter(
     GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
     GoRoute(path: '/signup', builder: (context, state) => const SignupPage()),
     GoRoute(path: '/forgetPs', builder: (context, state) => const ForgetPsPage()),
+    GoRoute(path: '/verification', builder: (context, state) => const EmailOtpPage()),
   ],
 );
