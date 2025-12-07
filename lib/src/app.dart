@@ -9,7 +9,7 @@ class DevsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-        designSize: const Size(390, 844), // Your UI design size (Figma size)
+        designSize: const Size(412, 915), // Your UI design size (Figma size)
         minTextAdapt: true,
         splitScreenMode: true,
         builder: (context, child) {

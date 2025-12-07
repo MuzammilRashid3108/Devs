@@ -18,7 +18,7 @@ class WelcomePage extends StatelessWidget {
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.only(top: 180.0),
+          padding: EdgeInsets.only(top: 180.h),   // 🔥 ScreenUtil applied
           child: Column(
             children: [
               Center(
@@ -28,52 +28,52 @@ class WelcomePage extends StatelessWidget {
                         ? AppImageStrings.logoTrLight
                         : AppImageStrings.logoTrDark,
                   ),
-                  height: 100,
+                  height: 100.h,                 // 🔥 ScreenUtil
                 ),
               ),
-              SizedBox(height: 40),
+
+              SizedBox(height: 40.h),            // 🔥 ScreenUtil
+
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                padding: EdgeInsets.symmetric(horizontal: 18.w),   // 🔥 ScreenUtil
                 child: Text(
                   'Welcome to',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 33.9,
+                    fontSize: 33.9.sp,           // 🔥 ScreenUtil
                     fontWeight: FontWeight.w600,
                     fontFamily: AppFontStrings.pjsBold,
                   ),
                 ),
               ),
-              SizedBox(height: 15,),
+
+              SizedBox(height: 15.h),
+
               Text(
                 'Heaven of Nerds',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: isDarkMode ? Colors.white : Colors.black,
-                  fontSize: 33.9,
+                  fontSize: 33.9.sp,            // 🔥 ScreenUtil
                   fontWeight: FontWeight.w600,
                   fontFamily: AppFontStrings.pjsBold,
                 ),
               ),
-              SizedBox(height: 20),
+
+              SizedBox(height: 20.h),
+
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                // child: Text(
-                //   "Where ideas evolve into real applications.Empowering you to code smarter, faster, and better.",
-                //   textAlign: TextAlign.center,
-                //   style: TextStyle(
-                //     color: const Color(0xff787878),
-                //     fontSize: 16.sp,
-                //     fontFamily: AppFontStrings.pjsBold,
-                //   ),
-                // ),
+                padding: EdgeInsets.symmetric(horizontal: 25.w),
               ),
-              SizedBox(height: 40),
+
+              SizedBox(height: 40.h),
+
+              // 🔥 LOGIN BUTTON
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 25.0),
+                padding: EdgeInsets.symmetric(horizontal: 25.w),
                 child: SizedBox(
-                  height: 60,
+                  height: 60.h,
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
@@ -81,10 +81,10 @@ class WelcomePage extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isDarkMode
-                          ? Color(0xffFFFFFF)
+                          ? Colors.white
                           : AppColors.darkBackground,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(60),
+                        borderRadius: BorderRadius.circular(60.r),
                       ),
                     ),
                     child: Text(
@@ -98,28 +98,25 @@ class WelcomePage extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 22),
+
+              SizedBox(height: 22.h),
+
+              // 🔥 SIGNUP BUTTON
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 25.0),
+                padding: EdgeInsets.symmetric(horizontal: 25.w),
                 child: SizedBox(
-                  height: 60,
+                  height: 60.h,
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
                       context.push('/signup');
                     },
                     style: ElevatedButton.styleFrom(
-                      // side: BorderSide(
-                      //   color: isDarkMode
-                      //       ? Color(0xffFFFFFF)
-                      //       : AppColors.darkBackground,
-                      //   width: 2,
-                      // ),
                       backgroundColor: isDarkMode
-                          ? Colors.grey.shade900
+                          ? AppColors.backButtonColor
                           : Colors.grey.shade300,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(60),
+                        borderRadius: BorderRadius.circular(60.r),
                       ),
                     ),
                     child: Text(
@@ -133,7 +130,9 @@ class WelcomePage extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 42),
+
+              SizedBox(height: 42.h),
+
               Text(
                 'Continue With Accounts',
                 style: GoogleFonts.poppins(
@@ -141,9 +140,11 @@ class WelcomePage extends StatelessWidget {
                   fontSize: 16.sp,
                 ),
               ),
-              SizedBox(height: 32.r),
+
+              SizedBox(height: 32.h),
+
               Padding(
-                padding: const EdgeInsets.only(left: 23.0),
+                padding: EdgeInsets.only(left: 23.w),
                 child: AuthButtons(),
               ),
             ],

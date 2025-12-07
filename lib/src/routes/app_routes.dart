@@ -1,3 +1,4 @@
+import 'package:devs/src/features/auth/presentation/pages/forget_psw_page.dart';
 import 'package:devs/src/features/auth/presentation/pages/login_page.dart';
 import 'package:devs/src/features/auth/presentation/pages/signup_page.dart';
 import 'package:devs/src/features/onBoardings/presentation/on_boarding_page.dart';
@@ -12,5 +13,6 @@ final appRoutes = GoRouter(
     GoRoute(path: '/welcome', builder: (context, state) => const WelcomePage()),
     GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
     GoRoute(path: '/signup', builder: (context, state) => const SignupPage()),
+    GoRoute(path: '/forgetPs', builder: (context, state) => const ForgetPsPage()),
   ],
 );
