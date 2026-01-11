@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 import '../../../../core/common/constants/font_strings.dart';
 import '../../../welcome/wiedgets/auth_buttons.dart';
 import '../../services/auth_services.dart';
@@ -23,6 +22,7 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController nameController = TextEditingController();
 
   bool _obscureText = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -67,8 +67,11 @@ class _SignupPageState extends State<SignupPage> {
                         padding: const EdgeInsets.only(left: 25.0, right: 25).r,
                         child: Text(
                           'Create Your\nAccount',
-                          style: TextStyle(fontSize: 38,fontFamily: AppFontStrings.pjsBold,fontWeight: FontWeight.w600),
-
+                          style: TextStyle(
+                            fontSize: 38,
+                            fontFamily: AppFontStrings.pjsBold,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       SizedBox(height: 48),
@@ -118,10 +121,10 @@ class _SignupPageState extends State<SignupPage> {
                           ),
                           hintStyle: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
-                            color: isDarkMode
-                                ? Colors.white70
-                                : Colors.black54,
-                          ),
+                                color: isDarkMode
+                                    ? Colors.white70
+                                    : Colors.black54,
+                              ),
                         ),
                       ),
                     ),
@@ -163,10 +166,10 @@ class _SignupPageState extends State<SignupPage> {
                           ),
                           hintStyle: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
-                            color: isDarkMode
-                                ? Colors.white70
-                                : Colors.black54,
-                          ),
+                                color: isDarkMode
+                                    ? Colors.white70
+                                    : Colors.black54,
+                              ),
                         ),
                       ),
                     ),
@@ -226,10 +229,10 @@ class _SignupPageState extends State<SignupPage> {
                           ),
                           hintStyle: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
-                            color: isDarkMode
-                                ? Colors.white70
-                                : Colors.black54,
-                          ),
+                                color: isDarkMode
+                                    ? Colors.white70
+                                    : Colors.black54,
+                              ),
                         ),
                       ),
                     ),
@@ -246,15 +249,60 @@ class _SignupPageState extends State<SignupPage> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 25.0),
                         child: ElevatedButton(
-                          onPressed: () async {
-                            final auth = AuthService();
+                          onPressed: _isLoading
+                              ? null
+                              : () async {
+                                  final email = emailController.text.trim();
+                                  final password = passwordController.text
+                                      .trim();
 
-                            await auth.signUpWithEmail(
-                              emailController.text.trim(),
-                              passwordController.text.trim(),
-                            );
+                                  if (email.isEmpty || password.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Please fill all fields"),
+                                      ),
+                                    );
+                                    return;
+                                  }
 
-                          },
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
+
+                                  try {
+                                    final auth = AuthService();
+                                    final user = await auth.signUpWithEmail(
+                                      email,
+                                      password,
+                                    );
+
+                                    if (user != null && context.mounted) {
+                                      context.go('/home');
+                                    } else if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("Signup Failed"),
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(content: Text("Error: $e")),
+                                      );
+                                    }
+                                  } finally {
+                                    if (context.mounted) {
+                                      setState(() {
+                                        _isLoading = false;
+                                      });
+                                    }
+                                  }
+                                },
 
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isDarkMode
@@ -264,16 +312,20 @@ class _SignupPageState extends State<SignupPage> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          child: Text(
-                            "Register",
-                            style: GoogleFonts.poppins(
-                              color: isDarkMode
-                                  ? AppColors.lightBackground
-                                  : AppColors.lightBackground,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Text(
+                                  "Register",
+                                  style: GoogleFonts.poppins(
+                                    color: isDarkMode
+                                        ? AppColors.lightBackground
+                                        : AppColors.lightBackground,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
                     ),

@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/common/constants/app_colors.dart';
 import '../../../../core/common/widgets/custom_back_button.dart';
 import '../../../welcome/wiedgets/auth_buttons.dart';
+import '../../services/auth_services.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,7 +17,17 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   bool _obscureText = true;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +69,11 @@ class _LoginPageState extends State<LoginPage> {
                         child: Text(
                           'Login Your\nAccount',
 
-                          style: TextStyle(fontSize: 38,fontFamily: AppFontStrings.pjsBold,fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 38,
+                            fontFamily: AppFontStrings.pjsBold,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
@@ -73,6 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                         right: 25,
                       ),
                       child: TextField(
+                        controller: emailController,
                         style: Theme.of(context).textTheme.bodyMedium,
                         decoration: InputDecoration(
                           prefixIcon: Padding(
@@ -106,8 +122,11 @@ class _LoginPageState extends State<LoginPage> {
                           ),
 
                           // hint style uses labelSmall from theme
-                          hintStyle: TextStyle(fontSize: 13,fontFamily: AppFontStrings.pjsBold)
-                              ?.copyWith(
+                          hintStyle:
+                              TextStyle(
+                                fontSize: 13,
+                                fontFamily: AppFontStrings.pjsBold,
+                              ).copyWith(
                                 color: isDarkMode
                                     ? Colors.white70
                                     : Colors.black54,
@@ -121,6 +140,7 @@ class _LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.only(left: 25, right: 25),
 
                       child: TextField(
+                        controller: passwordController,
                         obscureText: _obscureText,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: isDarkMode ? Colors.white : Colors.black,
@@ -167,8 +187,11 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
-                          hintStyle: TextStyle(fontSize: 13,fontFamily: AppFontStrings.pjsBold)
-                              ?.copyWith(
+                          hintStyle:
+                              TextStyle(
+                                fontSize: 13,
+                                fontFamily: AppFontStrings.pjsBold,
+                              ).copyWith(
                                 color: isDarkMode
                                     ? Colors.white70
                                     : Colors.black54,
@@ -190,10 +213,12 @@ class _LoginPageState extends State<LoginPage> {
                               child: Text(
                                 'Forget Password ?',
                                 style: TextStyle(
-                                  color: isDarkMode ? Colors.grey : Colors.grey.shade600,
+                                  color: isDarkMode
+                                      ? Colors.grey
+                                      : Colors.grey.shade600,
                                   fontSize: 14.sp,
                                   fontWeight: FontWeight.w500,
-                                  fontFamily: AppFontStrings.pjsBold
+                                  fontFamily: AppFontStrings.pjsBold,
                                 ),
                               ),
                             ),
@@ -207,9 +232,58 @@ class _LoginPageState extends State<LoginPage> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 25.0),
                         child: ElevatedButton(
-                          onPressed: () {
-                            context.push('/login');
-                          },
+                          onPressed: _isLoading
+                              ? null
+                              : () async {
+                                  final email = emailController.text.trim();
+                                  final password = passwordController.text
+                                      .trim();
+
+                                  if (email.isEmpty || password.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Please fill all fields"),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
+
+                                  try {
+                                    final user = await AuthService()
+                                        .signInWithEmail(email, password);
+                                    if (user != null && context.mounted) {
+                                      context.go('/home');
+                                    } else if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            "Login Failed: Incorrect email or password",
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(content: Text("Error: $e")),
+                                      );
+                                    }
+                                  } finally {
+                                    if (context.mounted) {
+                                      setState(() {
+                                        _isLoading = false;
+                                      });
+                                    }
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isDarkMode
                                 ? AppColors.backButtonColor
@@ -218,17 +292,21 @@ class _LoginPageState extends State<LoginPage> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          child: Text(
-                            "Log in",
-                            style: TextStyle(
-                              color: isDarkMode
-                                  ? AppColors.lightBackground
-                                  : AppColors.lightBackground,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                                fontFamily: AppFontStrings.pjsBold
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Text(
+                                  "Log in",
+                                  style: TextStyle(
+                                    color: isDarkMode
+                                        ? AppColors.lightBackground
+                                        : AppColors.lightBackground,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    fontFamily: AppFontStrings.pjsBold,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
@@ -238,7 +316,11 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         Text(
                           'Create new account? ',
-                          style: GoogleFonts.poppins(color: isDarkMode ? Color(0xffACADB9) : Colors.grey.shade600),
+                          style: GoogleFonts.poppins(
+                            color: isDarkMode
+                                ? Color(0xffACADB9)
+                                : Colors.grey.shade600,
+                          ),
                         ),
                         Text(
                           'Signup',
@@ -257,7 +339,11 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(height: 25),
                     Text(
                       'Continue with these accounts',
-                      style: GoogleFonts.poppins(color: isDarkMode ? Color(0xffACADB9) : Colors.grey.shade600),
+                      style: GoogleFonts.poppins(
+                        color: isDarkMode
+                            ? Color(0xffACADB9)
+                            : Colors.grey.shade600,
+                      ),
                     ),
                     SizedBox(height: 30),
                     Padding(

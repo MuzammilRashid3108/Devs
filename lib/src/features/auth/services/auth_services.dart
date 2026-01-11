@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
-
   //Google Auth
 
   final _auth = FirebaseAuth.instance;
@@ -33,14 +32,12 @@ class AuthService {
     }
   }
 
-
   // ===============================
   // EMAIL + PASSWORD SIGN UP
   // ===============================
   Future<User?> signUpWithEmail(String email, String password) async {
     try {
-      UserCredential userCred =
-      await _auth.createUserWithEmailAndPassword(
+      UserCredential userCred = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -57,8 +54,7 @@ class AuthService {
   // ===============================
   Future<User?> signInWithEmail(String email, String password) async {
     try {
-      UserCredential userCred =
-      await _auth.signInWithEmailAndPassword(
+      UserCredential userCred = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -77,11 +73,15 @@ class AuthService {
     required String phoneNumber,
     required Function(String verificationId) onCodeSent,
     required Function(String error) onError,
+    Function()? onVerificationCompleted,
   }) async {
     await _auth.verifyPhoneNumber(
       phoneNumber: phoneNumber,
       verificationCompleted: (PhoneAuthCredential credential) async {
         await _auth.signInWithCredential(credential);
+        if (onVerificationCompleted != null) {
+          onVerificationCompleted();
+        }
       },
       verificationFailed: (FirebaseAuthException e) {
         onError(e.message ?? "OTP Failed");
@@ -96,17 +96,14 @@ class AuthService {
   // ===============================
   // PHONE AUTH - VERIFY OTP
   // ===============================
-  Future<User?> verifyOTP(
-      String verificationId, String smsCode) async {
+  Future<User?> verifyOTP(String verificationId, String smsCode) async {
     try {
-      PhoneAuthCredential credential =
-      PhoneAuthProvider.credential(
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
         verificationId: verificationId,
         smsCode: smsCode,
       );
 
-      UserCredential userCred =
-      await _auth.signInWithCredential(credential);
+      UserCredential userCred = await _auth.signInWithCredential(credential);
 
       return userCred.user;
     } catch (e) {
@@ -115,12 +112,8 @@ class AuthService {
     }
   }
 
-
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _auth.signOut();
   }
-
-
-
 }

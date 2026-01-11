@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 class AppSizes {
   static const double tP = 60;
   static const double tPob = 100;
