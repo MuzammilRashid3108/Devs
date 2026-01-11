@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/common/constants/app_colors.dart';
 import '../../auth/services/auth_services.dart';
-
 
 class AuthButtons extends StatelessWidget {
   const AuthButtons({super.key});
@@ -21,9 +21,21 @@ class AuthButtons extends StatelessWidget {
             width: 165.w,
             child: ElevatedButton(
               onPressed: () async {
-                final user = await AuthService().signInWithGoogle();
-                if (user != null) {
-                  print("Signed in as: ${user.displayName}");
+                try {
+                  final user = await AuthService().signInWithGoogle();
+                  if (user != null && context.mounted) {
+                    context.go('/home');
+                  } else if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Google Sign-In Cancelled")),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text("Error: $e")));
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -44,7 +56,7 @@ class AuthButtons extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(width: 15,),
+        SizedBox(width: 15),
         Padding(
           padding: EdgeInsets.only(right: 25.0),
           child: SizedBox(

@@ -8,28 +8,23 @@ class AuthService {
   final _googleSignIn = GoogleSignIn();
 
   Future<User?> signInWithGoogle() async {
-    try {
-      // Step 1: Start Google sign in
-      final GoogleSignInAccount? gUser = await _googleSignIn.signIn();
-      if (gUser == null) return null;
+    // Step 1: Start Google sign in
+    final GoogleSignInAccount? gUser = await _googleSignIn.signIn();
+    if (gUser == null) return null; // User cancelled
 
-      // Step 2: Google auth details
-      final GoogleSignInAuthentication gAuth = await gUser.authentication;
+    // Step 2: Google auth details
+    final GoogleSignInAuthentication gAuth = await gUser.authentication;
 
-      // Step 3: Create credential
-      final credential = GoogleAuthProvider.credential(
-        accessToken: gAuth.accessToken,
-        idToken: gAuth.idToken,
-      );
+    // Step 3: Create credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: gAuth.accessToken,
+      idToken: gAuth.idToken,
+    );
 
-      // Step 4: Login to Firebase
-      UserCredential userCred = await _auth.signInWithCredential(credential);
+    // Step 4: Login to Firebase
+    UserCredential userCred = await _auth.signInWithCredential(credential);
 
-      return userCred.user;
-    } catch (e) {
-      print("Google Auth Error: $e");
-      return null;
-    }
+    return userCred.user;
   }
 
   // ===============================
