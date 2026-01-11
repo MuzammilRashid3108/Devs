@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/common/constants/font_strings.dart';
 import '../../../welcome/wiedgets/auth_buttons.dart';
+import '../../services/auth_services.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -17,7 +18,19 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+
   bool _obscureText = true;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +84,8 @@ class _SignupPageState extends State<SignupPage> {
                         right: 25,
                       ),
                       child: TextField(
-                        obscureText: _obscureText,
+                        controller: nameController,
+                        obscureText: false,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: isDarkMode ? Colors.white : Colors.black,
                         ),
@@ -115,7 +129,8 @@ class _SignupPageState extends State<SignupPage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 25.0),
                       child: TextField(
-                        obscureText: _obscureText,
+                        controller: emailController,
+                        obscureText: false,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: isDarkMode ? Colors.white : Colors.black,
                         ),
@@ -162,6 +177,7 @@ class _SignupPageState extends State<SignupPage> {
                       padding: const EdgeInsets.only(left: 25, right: 25),
 
                       child: TextField(
+                        controller: passwordController,
                         obscureText: _obscureText,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: isDarkMode ? Colors.white : Colors.black,
@@ -230,9 +246,16 @@ class _SignupPageState extends State<SignupPage> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 25.0),
                         child: ElevatedButton(
-                          onPressed: () {
-                            context.push('/login');
+                          onPressed: () async {
+                            final auth = AuthService();
+
+                            await auth.signUpWithEmail(
+                              emailController.text.trim(),
+                              passwordController.text.trim(),
+                            );
+
                           },
+
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isDarkMode
                                 ? AppColors.backButtonColor

@@ -84,7 +84,7 @@ class WelcomePage extends StatelessWidget {
                           ? Colors.white
                           : AppColors.darkBackground,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(60.r),
+                        borderRadius: BorderRadius.circular(16.r),
                       ),
                     ),
                     child: Text(
@@ -116,7 +116,7 @@ class WelcomePage extends StatelessWidget {
                           ? AppColors.backButtonColor
                           : Colors.grey.shade300,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(60.r),
+                        borderRadius: BorderRadius.circular(16.r),
                       ),
                     ),
                     child: Text(

@@ -33,10 +33,94 @@ class AuthService {
     }
   }
 
+
+  // ===============================
+  // EMAIL + PASSWORD SIGN UP
+  // ===============================
+  Future<User?> signUpWithEmail(String email, String password) async {
+    try {
+      UserCredential userCred =
+      await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      return userCred.user;
+    } on FirebaseAuthException catch (e) {
+      print("Email Signup Error: ${e.message}");
+      return null;
+    }
+  }
+
+  // ===============================
+  // EMAIL + PASSWORD LOGIN
+  // ===============================
+  Future<User?> signInWithEmail(String email, String password) async {
+    try {
+      UserCredential userCred =
+      await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      return userCred.user;
+    } on FirebaseAuthException catch (e) {
+      print("Email Login Error: ${e.message}");
+      return null;
+    }
+  }
+
+  // ===============================
+  // PHONE AUTH - SEND OTP
+  // ===============================
+  Future<void> sendOTP({
+    required String phoneNumber,
+    required Function(String verificationId) onCodeSent,
+    required Function(String error) onError,
+  }) async {
+    await _auth.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await _auth.signInWithCredential(credential);
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        onError(e.message ?? "OTP Failed");
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        onCodeSent(verificationId);
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {},
+    );
+  }
+
+  // ===============================
+  // PHONE AUTH - VERIFY OTP
+  // ===============================
+  Future<User?> verifyOTP(
+      String verificationId, String smsCode) async {
+    try {
+      PhoneAuthCredential credential =
+      PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsCode,
+      );
+
+      UserCredential userCred =
+      await _auth.signInWithCredential(credential);
+
+      return userCred.user;
+    } catch (e) {
+      print("OTP Verify Error: $e");
+      return null;
+    }
+  }
+
+
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _auth.signOut();
   }
+
 
 
 }
