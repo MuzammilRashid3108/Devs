@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -668,8 +669,10 @@ class _StepDoneState extends State<_StepDone> with TickerProviderStateMixin {
               opacity: _cardCtrl,
               child: GlowButton(
                 label: 'Enter the Arena 🏟️', enabled: true,
-                onTap: () => HapticFeedback.heavyImpact(),
-                palette: p,
+                onTap: () {
+                  HapticFeedback.heavyImpact();
+                  context.go('/level');
+                  }, palette: p,
               ),
             ),
           ),
