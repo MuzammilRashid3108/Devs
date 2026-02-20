@@ -3,7 +3,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../../../../core/common/widgets/nav_bar.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ADAPTIVE PALETTE
@@ -76,29 +79,26 @@ const _levels = [
   _Level(number: 12, title: 'BOSS: DP Marathon', tag: 'BOSS',   emoji: '👑', state: _State.locked, stars: 0, nodeColor: Color(0xFFFFB82E)),
 ];
 
-// Snake path — (xFrac, yFrac) of the scrollable canvas.
-// y=1.0 is bottom (lv 1), y=0.0 is top (boss lv 12)
 const _snake = [
-  (x: 0.28, y: 0.96), // 1
-  (x: 0.58, y: 0.88), // 2
-  (x: 0.76, y: 0.79), // 3
-  (x: 0.62, y: 0.70), // 4
-  (x: 0.34, y: 0.62), // 5
-  (x: 0.16, y: 0.53), // 6
-  (x: 0.36, y: 0.44), // 7 — active
-  (x: 0.64, y: 0.36), // 8
-  (x: 0.80, y: 0.27), // 9
-  (x: 0.60, y: 0.18), // 10
-  (x: 0.28, y: 0.11), // 11
-  (x: 0.50, y: 0.03), // 12 — boss
+  (x: 0.28, y: 0.96),
+  (x: 0.58, y: 0.88),
+  (x: 0.76, y: 0.79),
+  (x: 0.62, y: 0.70),
+  (x: 0.34, y: 0.62),
+  (x: 0.16, y: 0.53),
+  (x: 0.36, y: 0.44),
+  (x: 0.64, y: 0.36),
+  (x: 0.80, y: 0.27),
+  (x: 0.60, y: 0.18),
+  (x: 0.28, y: 0.11),
+  (x: 0.50, y: 0.03),
 ];
 
-// Zone info: which levels belong, tint colour, label
 const _zones = [
-  (range: (0, 3),  color: Color(0xFF0D3018), label: '🌲 Greenwood Forest'),
-  (range: (4, 7),  color: Color(0xFF0E0C28), label: '💎 Crystal Caverns'),
-  (range: (8, 10), color: Color(0xFF2E0C0C), label: '🌋 Inferno Peaks'),
-  (range: (11, 11),color: Color(0xFF1E1600), label: '☠️  Shadow Sanctum'),
+  (range: (0, 3),   color: Color(0xFF0D3018), label: '🌲 Greenwood Forest'),
+  (range: (4, 7),   color: Color(0xFF0E0C28), label: '💎 Crystal Caverns'),
+  (range: (8, 10),  color: Color(0xFF2E0C0C), label: '🌋 Inferno Peaks'),
+  (range: (11, 11), color: Color(0xFF1E1600), label: '☠️  Shadow Sanctum'),
 ];
 
 int _zoneOf(int i) {
@@ -163,8 +163,6 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
     return Scaffold(
       backgroundColor: p.bg,
       body: Stack(children: [
-
-        // ── Deep starfield background ────────────────────────────────────
         AnimatedBuilder(
           animation: _bgCtrl,
           builder: (_, __) => CustomPaint(
@@ -181,7 +179,7 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
           Expanded(child: _buildMap(context, p, isDark, size)),
         ])),
 
-        Positioned(bottom: 0, left: 0, right: 0, child: _buildNav(p)),
+        Positioned(bottom: 0, left: 0, right: 0, child: const AppNavBar(current: NavDest.home)),
       ]),
     );
   }
@@ -200,15 +198,18 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
               blurRadius: 14, offset: const Offset(0, 3))],
         ),
         child: Row(children: [
-          Container(
-            width: 32.w, height: 32.w,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                  colors: [Color(0xFF9C91F8), Color(0xFF7C6EF5)],
-                  begin: Alignment.topLeft, end: Alignment.bottomRight),
-              borderRadius: BorderRadius.circular(10.r),
+          GestureDetector(
+            onTap: () => context.go('/profile'),
+            child: Container(
+              width: 32.w, height: 32.w,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                    colors: [Color(0xFF9C91F8), Color(0xFF7C6EF5)],
+                    begin: Alignment.topLeft, end: Alignment.bottomRight),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Center(child: Text('🧑‍💻', style: TextStyle(fontSize: 16.sp))),
             ),
-            child: Center(child: Text('🧑‍💻', style: TextStyle(fontSize: 16.sp))),
           ),
           SizedBox(width: 9.w),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -223,7 +224,7 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
       const Spacer(),
       _Chip(emoji: '⚡', label: '8,250 XP', fg: p.accent, bg: p.accentSoft),
       SizedBox(width: 7.w),
-      _Chip(emoji: '🔥', label: '17',       fg: p.loss,   bg: p.lossSoft),
+      _Chip(emoji: '🔥', label: '17', fg: p.loss, bg: p.lossSoft),
     ]),
   );
 
@@ -270,17 +271,11 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
       child: SizedBox(
         width: canvasW, height: canvasH,
         child: Stack(clipBehavior: Clip.none, children: [
-
-          // Zone tint layers
           ..._zoneTints(canvasW, canvasH, positions, isDark),
-
-          // Road lines
           CustomPaint(
             size: Size(canvasW, canvasH),
             painter: _RoadPainter(positions, _levels, p, isDark),
           ),
-
-          // Floating sparkles
           AnimatedBuilder(
             animation: _bgCtrl,
             builder: (_, __) => CustomPaint(
@@ -290,12 +285,8 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
                   isDark),
             ),
           ),
-
-          // Level nodes
           for (var i = 0; i < _levels.length; i++)
             _buildNode(ctx, i, positions[i], p, canvasW),
-
-          // Zone label chips
           ..._zoneLabels(canvasW, positions, p),
         ]),
       ),
@@ -304,9 +295,7 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
 
   List<Widget> _zoneTints(double w, double h, List<Offset> pos, bool isDark) {
     return _zones.map((z) {
-      final ys = [
-        for (var i = z.range.$1; i <= z.range.$2; i++) pos[i].dy
-      ];
+      final ys = [for (var i = z.range.$1; i <= z.range.$2; i++) pos[i].dy];
       final top = ys.reduce(math.min) - 90;
       final bot = ys.reduce(math.max) + 90;
       return Positioned(
@@ -353,11 +342,11 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
   }
 
   Widget _buildNode(BuildContext ctx, int i, Offset pos, _Palette p, double w) {
-    final level   = _levels[i];
-    final isBoss  = level.tag == 'BOSS';
-    final platW   = isBoss ? 108.w : 80.w;
-    final platH   = platW * 0.52;
-    final nodeH   = platH + 50.h;
+    final level  = _levels[i];
+    final isBoss = level.tag == 'BOSS';
+    final platW  = isBoss ? 108.w : 80.w;
+    final platH  = platW * 0.52;
+    final nodeH  = platH + 50.h;
 
     return AnimatedBuilder(
       animation: _entryCtrl,
@@ -392,7 +381,7 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
     );
   }
 
-  // ── Nav ───────────────────────────────────────────────────────────────────
+  // ── Nav ── FULLY WIRED ────────────────────────────────────────────────────
   Widget _buildNav(_Palette p) => Container(
     padding: EdgeInsets.only(top: 12.h, bottom: 26.h, left: 18.w, right: 18.w),
     decoration: BoxDecoration(
@@ -401,13 +390,46 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
       boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.10),
           blurRadius: 30, offset: const Offset(0, -4))],
     ),
-    child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-      _NavBtn(icon: Icons.flash_on_rounded,     label: 'Battle',   active: false, p: p),
-      _NavBtn(icon: Icons.emoji_events_rounded, label: 'Rank',     active: false, p: p),
-      _NavBtn(icon: Icons.home_rounded,         label: 'Home',     active: true,  p: p),
-      _NavBtn(icon: Icons.person_rounded,       label: 'Profile',  active: false, p: p),
-      _NavBtn(icon: Icons.settings_rounded,     label: 'Settings', active: false, p: p),
-    ]),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _NavBtn(
+          icon: Icons.flash_on_rounded,
+          label: 'Battle',
+          active: false,
+          p: p,
+          onTap: () => context.go('/battle'),
+        ),
+        _NavBtn(
+          icon: Icons.emoji_events_rounded,
+          label: 'Rank',
+          active: false,
+          p: p,
+          onTap: () => context.go('/rank'),
+        ),
+        _NavBtn(
+          icon: Icons.home_rounded,
+          label: 'Home',
+          active: true,
+          p: p,
+          onTap: () => context.go('/level'),
+        ),
+        _NavBtn(
+          icon: Icons.person_rounded,
+          label: 'Profile',
+          active: false,
+          p: p,
+          onTap: () => context.go('/profile'),
+        ),
+        _NavBtn(
+          icon: Icons.settings_rounded,
+          label: 'Settings',
+          active: false,
+          p: p,
+          onTap: () => context.go('/settings'),
+        ),
+      ],
+    ),
   );
 
   void _openLevelSheet(BuildContext ctx, _Level l, _Palette p) =>
@@ -425,7 +447,7 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ISO PLATFORM PAINTER — draws a 3-face isometric block
+// ISO PLATFORM PAINTER
 // ─────────────────────────────────────────────────────────────────────────────
 class _IsoBlock extends CustomPainter {
   final Color topFace, leftFace, rightFace, edgeColor;
@@ -436,18 +458,16 @@ class _IsoBlock extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final w  = size.width;
-    final th = size.height * 0.48; // height of top face
+    final th = size.height * 0.48;
     final d  = depth;
 
-    // ── Top face (diamond / parallelogram) ──────────────────────────────
     final top = Path()
-      ..moveTo(w * 0.5, 0)          // top-centre peak
-      ..lineTo(w, th * 0.55)        // right
-      ..lineTo(w * 0.5, th)         // bottom-centre
-      ..lineTo(0, th * 0.55)        // left
+      ..moveTo(w * 0.5, 0)
+      ..lineTo(w, th * 0.55)
+      ..lineTo(w * 0.5, th)
+      ..lineTo(0, th * 0.55)
       ..close();
 
-    // ── Left side face ───────────────────────────────────────────────────
     final left = Path()
       ..moveTo(0, th * 0.55)
       ..lineTo(w * 0.5, th)
@@ -455,7 +475,6 @@ class _IsoBlock extends CustomPainter {
       ..lineTo(0, th * 0.55 + d)
       ..close();
 
-    // ── Right side face ──────────────────────────────────────────────────
     final right = Path()
       ..moveTo(w * 0.5, th)
       ..lineTo(w, th * 0.55)
@@ -481,7 +500,7 @@ class _IsoBlock extends CustomPainter {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ACTIVE PLATFORM (floating + pulsing glow)
+// ACTIVE PLATFORM
 // ─────────────────────────────────────────────────────────────────────────────
 class _ActivePlatform extends StatelessWidget {
   final _Level level;
@@ -498,16 +517,14 @@ class _ActivePlatform extends StatelessWidget {
     builder: (_, __) {
       final pulse = CurvedAnimation(parent: pulseCtrl, curve: Curves.easeInOut).value;
       final dy    = CurvedAnimation(parent: floatCtrl, curve: Curves.easeInOut).value * 5.0;
-      final depth = 14.0;
+      const depth = 14.0;
 
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Glow + floating iso block ────────────────────────────────
           Transform.translate(
             offset: Offset(0, -dy),
             child: Stack(alignment: Alignment.center, children: [
-              // Outer pulse ring
               Container(
                 width: platW + 18 + pulse * 16,
                 height: platW + 18 + pulse * 16,
@@ -517,8 +534,7 @@ class _ActivePlatform extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                width: platW,
-                height: platH + depth,
+                width: platW, height: platH + depth,
                 child: Stack(children: [
                   CustomPaint(
                     size: Size(platW, platH + depth),
@@ -530,7 +546,6 @@ class _ActivePlatform extends StatelessWidget {
                       depth: depth,
                     ),
                   ),
-                  // Content centred on top face
                   Positioned(
                     top: 0, left: 0, right: 0,
                     height: platH * 0.72,
@@ -550,7 +565,6 @@ class _ActivePlatform extends StatelessWidget {
             ]),
           ),
           SizedBox(height: 5.h),
-          // ── Label pill ─────────────────────────────────────────────────
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
             decoration: BoxDecoration(
@@ -570,7 +584,7 @@ class _ActivePlatform extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STATIC PLATFORM (done / locked)
+// STATIC PLATFORM
 // ─────────────────────────────────────────────────────────────────────────────
 class _StaticPlatform extends StatelessWidget {
   final _Level level;
@@ -586,64 +600,49 @@ class _StaticPlatform extends StatelessWidget {
     final isBoss = level.tag == 'BOSS';
     final depth  = isBoss ? 18.0 : locked ? 7.0 : 13.0;
 
-    final base   = done ? level.nodeColor : isBoss ? p.gold : p.surface2;
-    final topFace  = done
-        ? Color.lerp(base, Colors.white, 0.18)!
-        : isBoss ? Color.lerp(p.gold, Colors.white, 0.22)!
+    final base      = done ? level.nodeColor : isBoss ? p.gold : p.surface2;
+    final topFace   = done ? Color.lerp(base, Colors.white, 0.18)!
+        : isBoss   ? Color.lerp(p.gold, Colors.white, 0.22)!
         : p.surface2;
-    final leftFace = Color.lerp(topFace, Colors.black,
-        done ? 0.32 : isBoss ? 0.38 : 0.15)!;
-    final rightFace = Color.lerp(topFace, Colors.black,
-        done ? 0.52 : isBoss ? 0.55 : 0.28)!;
-    final edgeColor = done
-        ? base.withOpacity(0.55)
+    final leftFace  = Color.lerp(topFace, Colors.black, done ? 0.32 : isBoss ? 0.38 : 0.15)!;
+    final rightFace = Color.lerp(topFace, Colors.black, done ? 0.52 : isBoss ? 0.55 : 0.28)!;
+    final edgeColor = done  ? base.withOpacity(0.55)
         : isBoss ? p.gold.withOpacity(0.5)
         : p.hint.withOpacity(0.2);
 
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      // ── Iso block ──────────────────────────────────────────────────────
       SizedBox(
         width: platW, height: platH + depth,
         child: Stack(children: [
           CustomPaint(
             size: Size(platW, platH + depth),
-            painter: _IsoBlock(
-              topFace: topFace, leftFace: leftFace, rightFace: rightFace,
-              edgeColor: edgeColor, depth: depth,
-            ),
+            painter: _IsoBlock(topFace: topFace, leftFace: leftFace,
+                rightFace: rightFace, edgeColor: edgeColor, depth: depth),
           ),
-          // Content
           Positioned(
             top: 0, left: 0, right: 0,
             height: (platH + depth) * 0.60,
             child: Center(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
                 locked && !isBoss
-                    ? Icon(Icons.lock_rounded, size: 16.sp,
-                    color: p.hint.withOpacity(0.5))
-                    : Text(level.emoji,
-                    style: TextStyle(fontSize: isBoss ? 22.sp : 15.sp)),
+                    ? Icon(Icons.lock_rounded, size: 16.sp, color: p.hint.withOpacity(0.5))
+                    : Text(level.emoji, style: TextStyle(fontSize: isBoss ? 22.sp : 15.sp)),
                 if (done) ...[
                   SizedBox(height: 2.h),
                   Row(mainAxisSize: MainAxisSize.min,
                       children: List.generate(3, (i) => Icon(
-                        i < level.stars
-                            ? Icons.star_rounded : Icons.star_outline_rounded,
+                        i < level.stars ? Icons.star_rounded : Icons.star_outline_rounded,
                         size: 7.5.sp,
-                        color: i < level.stars
-                            ? p.gold : Colors.white.withOpacity(0.22),
+                        color: i < level.stars ? p.gold : Colors.white.withOpacity(0.22),
                       ))),
                 ],
               ]),
             ),
           ),
-          // Boss shimmer overlay
-          if (isBoss)
-            Positioned.fill(child: CustomPaint(painter: _GlowRim(p.gold))),
+          if (isBoss) Positioned.fill(child: CustomPaint(painter: _GlowRim(p.gold))),
         ]),
       ),
       SizedBox(height: 4.h),
-      // ── Title label ────────────────────────────────────────────────────
       if (done || isBoss)
         Text(level.title,
             maxLines: 1, overflow: TextOverflow.ellipsis,
@@ -687,19 +686,15 @@ class _RoadPainter extends CustomPainter {
     for (var i = 0; i < pts.length - 1; i++) {
       final a = pts[i], b = pts[i + 1];
       final done = levels[i].state == _State.done;
-
       if (done) {
-        // broad glow
         canvas.drawLine(a, b, Paint()
           ..color = p.win.withOpacity(isDark ? 0.16 : 0.10)
           ..strokeWidth = 20
           ..strokeCap = StrokeCap.round);
-        // core
         canvas.drawLine(a, b, Paint()
           ..color = p.win.withOpacity(0.60)
           ..strokeWidth = 3.5
           ..strokeCap = StrokeCap.round);
-        // bright centre
         canvas.drawLine(a, b, Paint()
           ..color = Colors.white.withOpacity(0.18)
           ..strokeWidth = 1.0
@@ -715,7 +710,7 @@ class _RoadPainter extends CustomPainter {
 
   void _dash(Canvas c, Offset a, Offset b, Paint paint) {
     final total = (b - a).distance;
-    final dir = (b - a) / total;
+    final dir   = (b - a) / total;
     var d = 0.0; var on = true;
     while (d < total) {
       final seg = on ? 9.0 : 6.0;
@@ -729,7 +724,7 @@ class _RoadPainter extends CustomPainter {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STARFIELD PAINTER (ambient bg)
+// STARFIELD PAINTER
 // ─────────────────────────────────────────────────────────────────────────────
 class _StarfieldPainter extends CustomPainter {
   final double t;
@@ -740,7 +735,6 @@ class _StarfieldPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final drift = math.sin(t * math.pi) * 32;
     final mul   = isDark ? 1.0 : 0.55;
-
     _blob(canvas, Offset(size.width * 0.88 + drift, size.height * 0.10),
         size.width * 0.65, const Color(0xFF7C6EF5).withOpacity(0.13 * mul));
     _blob(canvas, Offset(size.width * 0.07, size.height * 0.55 + drift * 0.6),
@@ -749,7 +743,6 @@ class _StarfieldPainter extends CustomPainter {
         size.width * 0.50, const Color(0xFFFF6B6B).withOpacity(0.07 * mul));
     _blob(canvas, Offset(size.width * 0.28, size.height * 0.33 + drift * 0.3),
         size.width * 0.40, const Color(0xFFFFB82E).withOpacity(0.06 * mul));
-
     if (isDark) {
       final rng = math.Random(42);
       for (var i = 0; i < 90; i++) {
@@ -775,7 +768,7 @@ class _StarfieldPainter extends CustomPainter {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SPARKLE / EMBER PAINTER (floats on the map scroll layer)
+// SPARK PAINTER
 // ─────────────────────────────────────────────────────────────────────────────
 class _SparkPainter extends CustomPainter {
   final double t;
@@ -788,12 +781,12 @@ class _SparkPainter extends CustomPainter {
     final rng = math.Random(13);
     const cols = [Color(0xFF9D8FF7), Color(0xFF3DD68C), Color(0xFFFFB82E)];
     for (var i = 0; i < 28; i++) {
-      final bx = rng.nextDouble() * size.width;
-      final by = rng.nextDouble() * size.height;
+      final bx    = rng.nextDouble() * size.width;
+      final by    = rng.nextDouble() * size.height;
       final phase = rng.nextDouble() * math.pi * 2;
-      final dy  = math.sin(t * math.pi + phase) * 14;
-      final op  = (0.25 + math.sin(t * math.pi * 2 + phase) * 0.3).clamp(0.0, 0.7);
-      final r   = rng.nextDouble() * 1.6 + 0.4;
+      final dy    = math.sin(t * math.pi + phase) * 14;
+      final op    = (0.25 + math.sin(t * math.pi * 2 + phase) * 0.3).clamp(0.0, 0.7);
+      final r     = rng.nextDouble() * 1.6 + 0.4;
       canvas.drawCircle(Offset(bx, by + dy), r,
           Paint()..color = cols[i % cols.length].withOpacity(op));
     }
@@ -868,29 +861,48 @@ class _ActionChipState extends State<_ActionChip>
   );
 }
 
+// ── _NavBtn — now accepts onTap for routing ───────────────────────────────────
 class _NavBtn extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool active;
   final _Palette p;
-  const _NavBtn({required this.icon, required this.label,
-    required this.active, required this.p});
+  final VoidCallback onTap; // ← routing callback
+
+  const _NavBtn({
+    required this.icon,
+    required this.label,
+    required this.active,
+    required this.p,
+    required this.onTap,
+  });
+
   @override
-  Widget build(BuildContext context) => AnimatedContainer(
-    duration: const Duration(milliseconds: 250),
-    padding: EdgeInsets.symmetric(horizontal: active ? 13.w : 8.w, vertical: 7.h),
-    decoration: BoxDecoration(
-      color: active ? p.accentSoft : Colors.transparent,
-      borderRadius: BorderRadius.circular(14.r),
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: () {
+      HapticFeedback.lightImpact();
+      onTap();
+    },
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      padding: EdgeInsets.symmetric(
+          horizontal: active ? 13.w : 8.w, vertical: 7.h),
+      decoration: BoxDecoration(
+        color: active ? p.accentSoft : Colors.transparent,
+        borderRadius: BorderRadius.circular(14.r),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(icon, size: 20.sp, color: active ? p.accent : p.hint),
+        if (active) ...[
+          SizedBox(width: 5.w),
+          Text(label,
+              style: GoogleFonts.dmMono(
+                  fontSize: 11.sp,
+                  color: p.accent,
+                  fontWeight: FontWeight.w700)),
+        ],
+      ]),
     ),
-    child: Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(icon, size: 20.sp, color: active ? p.accent : p.hint),
-      if (active) ...[
-        SizedBox(width: 5.w),
-        Text(label, style: GoogleFonts.dmMono(
-            fontSize: 11.sp, color: p.accent, fontWeight: FontWeight.w700)),
-      ],
-    ]),
   );
 }
 
@@ -932,7 +944,8 @@ class _LevelSheet extends StatelessWidget {
           onTap: () { HapticFeedback.lightImpact(); Navigator.pop(context); }),
       SizedBox(height: 14.h),
       GestureDetector(onTap: () => Navigator.pop(context),
-          child: Text('Cancel', style: GoogleFonts.dmMono(fontSize: 13.sp, color: p.sub))),
+          child: Text('Cancel',
+              style: GoogleFonts.dmMono(fontSize: 13.sp, color: p.sub))),
     ]);
   }
 }
@@ -955,7 +968,8 @@ class _LockedSheet extends StatelessWidget {
         onTap: () { HapticFeedback.lightImpact(); Navigator.pop(context); }),
     SizedBox(height: 14.h),
     GestureDetector(onTap: () => Navigator.pop(context),
-        child: Text('Close', style: GoogleFonts.dmMono(fontSize: 13.sp, color: p.sub))),
+        child: Text('Close',
+            style: GoogleFonts.dmMono(fontSize: 13.sp, color: p.sub))),
   ]);
 }
 
@@ -990,7 +1004,6 @@ class _GenericSheet extends StatelessWidget {
   }
 }
 
-// Shared sheet wrapper
 class _Sheet extends StatelessWidget {
   final _Palette p;
   final List<Widget> children;

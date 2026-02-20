@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/common/widgets/nav_bar.dart';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // ADAPTIVE PALETTE (same as LevelMapPage)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -178,7 +180,7 @@ class _ProfilePageState extends State<ProfilePage>
           ]),
         ),
 
-        Positioned(bottom: 0, left: 0, right: 0, child: _buildNav(p)),
+        Positioned(bottom:0, left:0, right:0, child: const AppNavBar(current: NavDest.profile)),
       ]),
     );
   }
