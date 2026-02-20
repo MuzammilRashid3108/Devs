@@ -179,7 +179,8 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
           Expanded(child: _buildMap(context, p, isDark, size)),
         ])),
 
-        Positioned(bottom: 0, left: 0, right: 0, child: const AppNavBar(current: NavDest.home)),
+        Positioned(bottom: 0, left: 0, right: 0,
+            child: const AppNavBar(current: NavDest.home)),
       ]),
     );
   }
@@ -346,7 +347,7 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
     final isBoss = level.tag == 'BOSS';
     final platW  = isBoss ? 108.w : 80.w;
     final platH  = platW * 0.52;
-    final nodeH  = platH + 50.h;
+    final nodeH  = platH + 56.h; // ✅ extra height so label never clips
 
     return AnimatedBuilder(
       animation: _entryCtrl,
@@ -380,57 +381,6 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
       ),
     );
   }
-
-  // ── Nav ── FULLY WIRED ────────────────────────────────────────────────────
-  Widget _buildNav(_Palette p) => Container(
-    padding: EdgeInsets.only(top: 12.h, bottom: 26.h, left: 18.w, right: 18.w),
-    decoration: BoxDecoration(
-      color: p.surface.withOpacity(0.96),
-      border: Border(top: BorderSide(color: p.hint.withOpacity(0.10))),
-      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.10),
-          blurRadius: 30, offset: const Offset(0, -4))],
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _NavBtn(
-          icon: Icons.flash_on_rounded,
-          label: 'Battle',
-          active: false,
-          p: p,
-          onTap: () => context.go('/battle'),
-        ),
-        _NavBtn(
-          icon: Icons.emoji_events_rounded,
-          label: 'Rank',
-          active: false,
-          p: p,
-          onTap: () => context.go('/rank'),
-        ),
-        _NavBtn(
-          icon: Icons.home_rounded,
-          label: 'Home',
-          active: true,
-          p: p,
-          onTap: () => context.go('/level'),
-        ),
-        _NavBtn(
-          icon: Icons.person_rounded,
-          label: 'Profile',
-          active: false,
-          p: p,
-          onTap: () => context.go('/profile'),
-        ),
-        _NavBtn(
-          icon: Icons.settings_rounded,
-          label: 'Settings',
-          active: false,
-          p: p,
-          onTap: () => context.go('/settings'),
-        ),
-      ],
-    ),
-  );
 
   void _openLevelSheet(BuildContext ctx, _Level l, _Palette p) =>
       showModalBottomSheet(context: ctx, backgroundColor: Colors.transparent,
@@ -522,47 +472,60 @@ class _ActivePlatform extends StatelessWidget {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Transform.translate(
-            offset: Offset(0, -dy),
-            child: Stack(alignment: Alignment.center, children: [
-              Container(
-                width: platW + 18 + pulse * 16,
-                height: platW + 18 + pulse * 16,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: p.accent.withOpacity(0.07 + pulse * 0.07),
+          // ✅ SizedBox reserves stable space so the Column never shifts.
+          //    Transform.translate is INSIDE so clipping can't occur —
+          //    overflow:visible on the Stack lets the glow ring + block
+          //    float freely outside the reserved area.
+          SizedBox(
+            width: platW + 36,          // extra room for glow ring
+            height: platH + depth + 16, // extra room for upward float
+            child: Stack(
+              clipBehavior: Clip.none,  // ✅ allow children to paint outside
+              alignment: Alignment.center,
+              children: [
+                // Pulsing glow ring — stays centred, not translated
+                Container(
+                  width: platW + 18 + pulse * 16,
+                  height: platW + 18 + pulse * 16,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: p.accent.withOpacity(0.07 + pulse * 0.07),
+                  ),
                 ),
-              ),
-              SizedBox(
-                width: platW, height: platH + depth,
-                child: Stack(children: [
-                  CustomPaint(
-                    size: Size(platW, platH + depth),
-                    painter: _IsoBlock(
-                      topFace:   p.accent,
-                      leftFace:  Color.lerp(p.accent, Colors.black, 0.38)!,
-                      rightFace: Color.lerp(p.accent, Colors.black, 0.58)!,
-                      edgeColor: Colors.white.withOpacity(0.25),
-                      depth: depth,
-                    ),
+                // Block + content translated together — clip.none lets it move freely
+                Transform.translate(
+                  offset: Offset(0, -dy),
+                  child: SizedBox(
+                    width: platW, height: platH + depth,
+                    child: Stack(clipBehavior: Clip.none, children: [
+                      CustomPaint(
+                        size: Size(platW, platH + depth),
+                        painter: _IsoBlock(
+                          topFace:   p.accent,
+                          leftFace:  Color.lerp(p.accent, Colors.black, 0.38)!,
+                          rightFace: Color.lerp(p.accent, Colors.black, 0.58)!,
+                          edgeColor: Colors.white.withOpacity(0.25),
+                          depth: depth,
+                        ),
+                      ),
+                      Positioned.fill(
+                        child: Align(
+                          alignment: const Alignment(0, -0.25),
+                          child: Column(mainAxisSize: MainAxisSize.min, children: [
+                            Text(level.emoji, style: TextStyle(fontSize: 16.sp)),
+                            SizedBox(height: 1.h),
+                            Text('LV ${level.number}',
+                                style: GoogleFonts.dmMono(
+                                    fontSize: 6.5.sp, color: Colors.white,
+                                    fontWeight: FontWeight.w800)),
+                          ]),
+                        ),
+                      ),
+                    ]),
                   ),
-                  Positioned(
-                    top: 0, left: 0, right: 0,
-                    height: platH * 0.72,
-                    child: Center(
-                      child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        Text(level.emoji, style: TextStyle(fontSize: 18.sp)),
-                        SizedBox(height: 1.h),
-                        Text('LV ${level.number}',
-                            style: GoogleFonts.dmMono(
-                                fontSize: 7.sp, color: Colors.white,
-                                fontWeight: FontWeight.w800)),
-                      ]),
-                    ),
-                  ),
-                ]),
-              ),
-            ]),
+                ),
+              ],
+            ),
           ),
           SizedBox(height: 5.h),
           Container(
@@ -619,22 +582,31 @@ class _StaticPlatform extends StatelessWidget {
             painter: _IsoBlock(topFace: topFace, leftFace: leftFace,
                 rightFace: rightFace, edgeColor: edgeColor, depth: depth),
           ),
-          Positioned(
-            top: 0, left: 0, right: 0,
-            height: (platH + depth) * 0.60,
-            child: Center(
+          // ✅ Align replaces the old fixed-height Positioned — no overflow
+          Positioned.fill(
+            child: Align(
+              alignment: const Alignment(0, -0.2),
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-                locked && !isBoss
-                    ? Icon(Icons.lock_rounded, size: 16.sp, color: p.hint.withOpacity(0.5))
-                    : Text(level.emoji, style: TextStyle(fontSize: isBoss ? 22.sp : 15.sp)),
+                if (locked && !isBoss)
+                  Icon(Icons.lock_rounded, size: 14.sp,
+                      color: p.hint.withOpacity(0.5))
+                else
+                  Text(level.emoji,
+                      style: TextStyle(fontSize: isBoss ? 20.sp : 13.sp)),
                 if (done) ...[
                   SizedBox(height: 2.h),
-                  Row(mainAxisSize: MainAxisSize.min,
-                      children: List.generate(3, (i) => Icon(
-                        i < level.stars ? Icons.star_rounded : Icons.star_outline_rounded,
-                        size: 7.5.sp,
-                        color: i < level.stars ? p.gold : Colors.white.withOpacity(0.22),
-                      ))),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(3, (i) => Icon(
+                      i < level.stars
+                          ? Icons.star_rounded
+                          : Icons.star_outline_rounded,
+                      size: 6.5.sp, // ✅ reduced from 7.5 → 6.5 to fit
+                      color: i < level.stars
+                          ? p.gold
+                          : Colors.white.withOpacity(0.22),
+                    )),
+                  ),
                 ],
               ]),
             ),
@@ -858,51 +830,6 @@ class _ActionChipState extends State<_ActionChip>
                 fontSize: 11.sp, color: widget.fg, fontWeight: FontWeight.w700)),
           ]),
         )),
-  );
-}
-
-// ── _NavBtn — now accepts onTap for routing ───────────────────────────────────
-class _NavBtn extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-  final _Palette p;
-  final VoidCallback onTap; // ← routing callback
-
-  const _NavBtn({
-    required this.icon,
-    required this.label,
-    required this.active,
-    required this.p,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: () {
-      HapticFeedback.lightImpact();
-      onTap();
-    },
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      padding: EdgeInsets.symmetric(
-          horizontal: active ? 13.w : 8.w, vertical: 7.h),
-      decoration: BoxDecoration(
-        color: active ? p.accentSoft : Colors.transparent,
-        borderRadius: BorderRadius.circular(14.r),
-      ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, size: 20.sp, color: active ? p.accent : p.hint),
-        if (active) ...[
-          SizedBox(width: 5.w),
-          Text(label,
-              style: GoogleFonts.dmMono(
-                  fontSize: 11.sp,
-                  color: p.accent,
-                  fontWeight: FontWeight.w700)),
-        ],
-      ]),
-    ),
   );
 }
 
