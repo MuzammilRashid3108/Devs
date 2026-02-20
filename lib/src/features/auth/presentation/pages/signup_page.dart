@@ -6,7 +6,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../services/auth_services.dart'; // ← keep your original import
+import '../../../home/data/level_service.dart';
+import '../../../home/data/progress_service.dart';
+import '../../services/auth_services.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ADAPTIVE PALETTE
@@ -54,6 +56,7 @@ class _FadeSlide extends StatelessWidget {
   final AnimationController ctrl;
   final double delay;
   final Widget child;
+
   const _FadeSlide({required this.ctrl, required this.delay, required this.child});
 
   @override
@@ -64,7 +67,8 @@ class _FadeSlide extends StatelessWidget {
     return FadeTransition(
       opacity: curve,
       child: SlideTransition(
-        position: Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero).animate(curve),
+        position: Tween<Offset>(
+            begin: const Offset(0, 0.06), end: Offset.zero).animate(curve),
         child: child,
       ),
     );
@@ -79,23 +83,28 @@ class _GlowButton extends StatefulWidget {
   final bool enabled;
   final VoidCallback? onTap;
   final _Palette p;
-  const _GlowButton({required this.label, required this.enabled, required this.p, this.onTap});
+
+  const _GlowButton(
+      {required this.label, required this.enabled, required this.p, this.onTap});
 
   @override
   State<_GlowButton> createState() => _GlowButtonState();
 }
 
-class _GlowButtonState extends State<_GlowButton> with SingleTickerProviderStateMixin {
+class _GlowButtonState extends State<_GlowButton>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _c;
   late final Animation<double>   _s;
 
   @override
   void initState() {
     super.initState();
-    _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 120));
+    _c = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 120));
     _s = Tween<double>(begin: 1.0, end: 0.96)
         .animate(CurvedAnimation(parent: _c, curve: Curves.easeOut));
   }
+
   @override
   void dispose() { _c.dispose(); super.dispose(); }
 
@@ -127,7 +136,8 @@ class _GlowButtonState extends State<_GlowButton> with SingleTickerProviderState
           child: Center(
             child: Text(widget.label,
                 style: GoogleFonts.dmMono(
-                  fontSize: 14.sp, color: widget.enabled ? Colors.white : p.hint,
+                  fontSize: 14.sp,
+                  color: widget.enabled ? Colors.white : p.hint,
                   fontWeight: FontWeight.w700, letterSpacing: 0.3,
                 )),
           ),
@@ -163,7 +173,8 @@ class _MeshPainter extends CustomPainter {
             .createShader(Rect.fromCircle(center: center, radius: r)));
 
   @override
-  bool shouldRepaint(covariant _MeshPainter old) => old.t != t || old.isDark != isDark;
+  bool shouldRepaint(covariant _MeshPainter old) =>
+      old.t != t || old.isDark != isDark;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -241,14 +252,17 @@ class _FieldState extends State<_Field> {
             suffixIcon: widget.showToggle
                 ? IconButton(
               icon: Icon(
-                _hidden ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                _hidden
+                    ? Icons.visibility_off_rounded
+                    : Icons.visibility_rounded,
                 size: 18.sp, color: _focused ? p.accent : p.hint,
               ),
               onPressed: () => setState(() => _hidden = !_hidden),
             )
                 : null,
             border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 15.h),
+            contentPadding:
+            EdgeInsets.symmetric(horizontal: 16.w, vertical: 15.h),
           ),
         ),
       ),
@@ -257,21 +271,27 @@ class _FieldState extends State<_Field> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SOCIAL CHIPS ROW
+// SOCIAL CHIPS ROW  — accepts an onGoogleTap callback
 // ─────────────────────────────────────────────────────────────────────────────
 class _SocialRow extends StatelessWidget {
   final _Palette p;
-  const _SocialRow({required this.p});
+  final VoidCallback onGoogleTap;   // ← NEW
+
+  const _SocialRow({required this.p, required this.onGoogleTap});
 
   @override
   Widget build(BuildContext context) => Row(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
-      _SocialChip(label: 'Google',  symbol: 'G',  color: const Color(0xFFEA4335), p: p),
+      _SocialChip(
+        label: 'Google', symbol: 'G',
+        color: const Color(0xFFEA4335), p: p,
+        onTap: onGoogleTap,           // ← wired up
+      ),
       SizedBox(width: 12.w),
-      _SocialChip(label: 'Apple',   symbol: '🍎', color: p.text, p: p),
+      _SocialChip(label: 'Apple',   symbol: '🍎', color: p.text, p: p, onTap: () {}),
       SizedBox(width: 12.w),
-      _SocialChip(label: 'Twitter', symbol: '𝕏',  color: p.text, p: p),
+      _SocialChip(label: 'Twitter', symbol: '𝕏',  color: p.text, p: p, onTap: () {}),
     ],
   );
 }
@@ -280,22 +300,32 @@ class _SocialChip extends StatefulWidget {
   final String label, symbol;
   final Color color;
   final _Palette p;
-  const _SocialChip({required this.label, required this.symbol, required this.color, required this.p});
+  final VoidCallback onTap;         // ← NEW
+
+  const _SocialChip({
+    required this.label, required this.symbol,
+    required this.color, required this.p,
+    required this.onTap,            // ← NEW
+  });
 
   @override
   State<_SocialChip> createState() => _SocialChipState();
 }
 
-class _SocialChipState extends State<_SocialChip> with SingleTickerProviderStateMixin {
+class _SocialChipState extends State<_SocialChip>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _c;
   late final Animation<double>   _s;
+
   @override
   void initState() {
     super.initState();
-    _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 100));
+    _c = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 100));
     _s = Tween<double>(begin: 1.0, end: 0.92)
         .animate(CurvedAnimation(parent: _c, curve: Curves.easeOut));
   }
+
   @override
   void dispose() { _c.dispose(); super.dispose(); }
 
@@ -304,7 +334,11 @@ class _SocialChipState extends State<_SocialChip> with SingleTickerProviderState
     final p = widget.p;
     return GestureDetector(
       onTapDown:   (_) => _c.forward(),
-      onTapUp:     (_) { _c.reverse(); HapticFeedback.selectionClick(); },
+      onTapUp: (_) {
+        _c.reverse();
+        HapticFeedback.selectionClick();
+        widget.onTap();             // ← actually calls the handler
+      },
       onTapCancel: () => _c.reverse(),
       child: ScaleTransition(
         scale: _s,
@@ -346,7 +380,8 @@ class _DividerRow extends StatelessWidget {
     Padding(
       padding: EdgeInsets.symmetric(horizontal: 12.w),
       child: Text(label,
-          style: GoogleFonts.dmMono(fontSize: 10.sp, color: p.sub, letterSpacing: 0.3)),
+          style: GoogleFonts.dmMono(
+              fontSize: 10.sp, color: p.sub, letterSpacing: 0.3)),
     ),
     Expanded(child: Divider(color: p.hint.withOpacity(0.3), thickness: 1)),
   ]);
@@ -404,11 +439,13 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _meshCtrl  = AnimationController(vsync: this, duration: const Duration(seconds: 8))
+    _meshCtrl = AnimationController(
+        vsync: this, duration: const Duration(seconds: 8))
       ..repeat(reverse: true);
-    _entryCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
+    _entryCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 900))
       ..forward();
-    _meshAnim  = CurvedAnimation(parent: _meshCtrl, curve: Curves.easeInOut);
+    _meshAnim = CurvedAnimation(parent: _meshCtrl, curve: Curves.easeInOut);
   }
 
   @override
@@ -419,24 +456,59 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  // ── Auth logic — identical to your original ─────────────────────────────────
+  // ── Email signup ─────────────────────────────────────────────────────────────
   Future<void> _signup() async {
-    final email    = _emailCtrl.text.trim();
-    final password = _passwordCtrl.text.trim();
-
-    if (email.isEmpty || password.isEmpty) {
-      _snack('Please fill all fields'); return;
-    }
+    if (_isLoading) return;
     setState(() => _isLoading = true);
     try {
-      final user = await AuthService().signUpWithEmail(email, password);
-      if (user != null && mounted) {
-        context.go('/home');
-      } else if (mounted) {
-        _snack('Signup Failed');
+      final result = await AuthService().signUpWithEmail(
+        email:    _emailCtrl.text.trim(),
+        password: _passwordCtrl.text.trim(),
+        username: _nameCtrl.text.trim(),
+      );
+      if (!mounted) return;
+      if (result.isSuccess) {
+        try {
+          final levels = await LevelService().getLevels();
+          await ProgressService().initProgress(result.user!.uid, levels);
+          if (mounted) context.go('/home');
+        } catch (e) {
+          _snack('Progress init failed: $e');
+        }
+      } else {
+        _snack(result.error ?? 'Signup failed');
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  // ── Google signup / login ─────────────────────────────────────────────────────
+  // Google auth doesn't have a separate "signup" — signInWithGoogle handles both
+  // new and returning users. For new Google users, the Firestore doc is created
+  // inside AuthService.signInWithGoogle (isNewUser check). We still init progress
+  // here so that new Google users get their level progress set up correctly.
+  Future<void> _signupWithGoogle() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    try {
+      final user = await AuthService().signInWithGoogle();
+      if (!mounted) return;
+      if (user != null) {
+        // Init progress for new Google users (safe to call — check inside service
+        // or guard with a try/catch if already initialised)
+        try {
+          final levels = await LevelService().getLevels();
+          await ProgressService().initProgress(user.uid, levels);
+        } catch (_) {
+          // progress may already exist for returning Google users — that's fine
+        }
+        if (mounted) context.go('/home');
+      } else {
+        _snack('Google sign-in was cancelled or failed. Please try again.');
       }
     } catch (e) {
-      if (mounted) _snack('Error: $e');
+      if (mounted) _snack('Google sign-in error: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -454,7 +526,6 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
       backgroundColor: p.bg,
       body: Stack(children: [
 
-        // ── Animated mesh ────────────────────────────────────────────────
         AnimatedBuilder(
           animation: _meshAnim,
           builder: (_, __) => CustomPaint(
@@ -468,96 +539,102 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
           child: SafeArea(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
 
-                SizedBox(height: 14.h),
+                    SizedBox(height: 14.h),
 
-                // ── Back ──────────────────────────────────────────────────
-                _FadeSlide(ctrl: _entryCtrl, delay: 0.0,
-                    child: _BackBtn(p: p, onTap: () => context.go('/welcome'))),
+                    _FadeSlide(ctrl: _entryCtrl, delay: 0.0,
+                        child: _BackBtn(p: p, onTap: () => context.go('/welcome'))),
 
-                SizedBox(height: 36.h),
+                    SizedBox(height: 36.h),
 
-                // ── Heading ───────────────────────────────────────────────
-                _FadeSlide(ctrl: _entryCtrl, delay: 0.08,
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Create Your',
-                          style: GoogleFonts.dmSerifDisplay(fontSize: 38.sp, color: p.text)),
-                      Text('Account',
-                          style: GoogleFonts.dmSerifDisplay(fontSize: 38.sp, color: p.accent)),
-                      SizedBox(height: 8.h),
-                      Text('Join the arena. Prove your code. 🏆',
-                          style: GoogleFonts.dmMono(fontSize: 12.sp, color: p.sub)),
-                    ])),
+                    _FadeSlide(ctrl: _entryCtrl, delay: 0.08,
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Create Your',
+                                  style: GoogleFonts.dmSerifDisplay(
+                                      fontSize: 38.sp, color: p.text)),
+                              Text('Account',
+                                  style: GoogleFonts.dmSerifDisplay(
+                                      fontSize: 38.sp, color: p.accent)),
+                              SizedBox(height: 8.h),
+                              Text('Join the arena. Prove your code. 🏆',
+                                  style: GoogleFonts.dmMono(
+                                      fontSize: 12.sp, color: p.sub)),
+                            ])),
 
-                SizedBox(height: 40.h),
+                    SizedBox(height: 40.h),
 
-                // ── Full name ─────────────────────────────────────────────
-                _FadeSlide(ctrl: _entryCtrl, delay: 0.14,
-                    child: _Field(
-                      controller: _nameCtrl, focusNode: _focusName,
-                      label: 'Full Name', hint: 'Ada Lovelace',
-                      icon: Icons.person_outline_rounded, p: p,
-                    )),
+                    _FadeSlide(ctrl: _entryCtrl, delay: 0.14,
+                        child: _Field(
+                          controller: _nameCtrl, focusNode: _focusName,
+                          label: 'Full Name', hint: 'Ada Lovelace',
+                          icon: Icons.person_outline_rounded, p: p,
+                        )),
 
-                SizedBox(height: 16.h),
+                    SizedBox(height: 16.h),
 
-                // ── Email ─────────────────────────────────────────────────
-                _FadeSlide(ctrl: _entryCtrl, delay: 0.20,
-                    child: _Field(
-                      controller: _emailCtrl, focusNode: _focusEmail,
-                      label: 'Email', hint: 'your@email.com',
-                      icon: Icons.alternate_email_rounded,
-                      keyboard: TextInputType.emailAddress, p: p,
-                    )),
+                    _FadeSlide(ctrl: _entryCtrl, delay: 0.20,
+                        child: _Field(
+                          controller: _emailCtrl, focusNode: _focusEmail,
+                          label: 'Email', hint: 'your@email.com',
+                          icon: Icons.alternate_email_rounded,
+                          keyboard: TextInputType.emailAddress, p: p,
+                        )),
 
-                SizedBox(height: 16.h),
+                    SizedBox(height: 16.h),
 
-                // ── Password ──────────────────────────────────────────────
-                _FadeSlide(ctrl: _entryCtrl, delay: 0.26,
-                    child: _Field(
-                      controller: _passwordCtrl, focusNode: _focusPass,
-                      label: 'Password', hint: '••••••••',
-                      icon: Icons.lock_outline_rounded,
-                      obscure: true, showToggle: true, p: p,
-                    )),
+                    _FadeSlide(ctrl: _entryCtrl, delay: 0.26,
+                        child: _Field(
+                          controller: _passwordCtrl, focusNode: _focusPass,
+                          label: 'Password', hint: '••••••••',
+                          icon: Icons.lock_outline_rounded,
+                          obscure: true, showToggle: true, p: p,
+                        )),
 
-                SizedBox(height: 32.h),
+                    SizedBox(height: 32.h),
 
-                // ── Register button ───────────────────────────────────────
-                _FadeSlide(ctrl: _entryCtrl, delay: 0.32,
-                    child: _isLoading
-                        ? Center(child: SizedBox(
-                        width: 24.w, height: 24.w,
-                        child: CircularProgressIndicator(strokeWidth: 2.5, color: p.accent)))
-                        : _GlowButton(
-                        label: '🚀  Register', enabled: true, p: p, onTap: _signup)),
+                    _FadeSlide(ctrl: _entryCtrl, delay: 0.32,
+                        child: _isLoading
+                            ? Center(child: SizedBox(
+                            width: 24.w, height: 24.w,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2.5, color: p.accent)))
+                            : _GlowButton(
+                            label: '🚀  Register',
+                            enabled: true, p: p, onTap: _signup)),
 
-                SizedBox(height: 28.h),
+                    SizedBox(height: 28.h),
 
-                // ── Login link ────────────────────────────────────────────
-                _FadeSlide(ctrl: _entryCtrl, delay: 0.36,
-                    child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Text('Already have an account? ',
-                          style: GoogleFonts.dmMono(fontSize: 13.sp, color: p.sub)),
-                      GestureDetector(
-                        onTap: () => context.push('/login'),
-                        child: Text('Log In',
-                            style: GoogleFonts.dmMono(
-                                fontSize: 13.sp, color: p.accent, fontWeight: FontWeight.w700)),
-                      ),
-                    ])),
+                    _FadeSlide(ctrl: _entryCtrl, delay: 0.36,
+                        child: Row(mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('Already have an account? ',
+                                  style: GoogleFonts.dmMono(
+                                      fontSize: 13.sp, color: p.sub)),
+                              GestureDetector(
+                                onTap: () => context.push('/login'),
+                                child: Text('Log In',
+                                    style: GoogleFonts.dmMono(
+                                        fontSize: 13.sp, color: p.accent,
+                                        fontWeight: FontWeight.w700)),
+                              ),
+                            ])),
 
-                SizedBox(height: 28.h),
+                    SizedBox(height: 28.h),
 
-                _FadeSlide(ctrl: _entryCtrl, delay: 0.40,
-                    child: _DividerRow(p: p, label: 'or continue with')),
-                SizedBox(height: 20.h),
-                _FadeSlide(ctrl: _entryCtrl, delay: 0.44,
-                    child: _SocialRow(p: p)),
-                SizedBox(height: 36.h),
+                    _FadeSlide(ctrl: _entryCtrl, delay: 0.40,
+                        child: _DividerRow(p: p, label: 'or continue with')),
 
-              ]),
+                    SizedBox(height: 20.h),
+
+                    // ── SocialRow now receives the real Google handler ──────────
+                    _FadeSlide(ctrl: _entryCtrl, delay: 0.44,
+                        child: _SocialRow(p: p, onGoogleTap: _signupWithGoogle)),
+
+                    SizedBox(height: 36.h),
+                  ]),
             ),
           ),
         ),

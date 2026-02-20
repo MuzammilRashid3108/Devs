@@ -1,69 +1,111 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../../profile/data/user-service.dart';
+import '../../profile/domain/user_model.dart';
 
 class AuthService {
-  //Google Auth
-
-  final _auth = FirebaseAuth.instance;
+  final _auth        = FirebaseAuth.instance;
   final _googleSignIn = GoogleSignIn();
+  final _userService  = UserService();
 
+  // ── Current user stream (listen in app root) ──────────────────────────────
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
+
+  // ── Current user (sync) ───────────────────────────────────────────────────
+  User? get currentUser => _auth.currentUser;
+
+  // ── Google Sign In ────────────────────────────────────────────────────────
   Future<User?> signInWithGoogle() async {
-    // Step 1: Start Google sign in
-    final GoogleSignInAccount? gUser = await _googleSignIn.signIn();
-    if (gUser == null) return null; // User cancelled
-
-    // Step 2: Google auth details
-    final GoogleSignInAuthentication gAuth = await gUser.authentication;
-
-    // Step 3: Create credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: gAuth.accessToken,
-      idToken: gAuth.idToken,
-    );
-
-    // Step 4: Login to Firebase
-    UserCredential userCred = await _auth.signInWithCredential(credential);
-
-    return userCred.user;
-  }
-
-  // ===============================
-  // EMAIL + PASSWORD SIGN UP
-  // ===============================
-  Future<User?> signUpWithEmail(String email, String password) async {
     try {
-      UserCredential userCred = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
+      final GoogleSignInAccount? gUser = await _googleSignIn.signIn();
+      if (gUser == null) return null;
+
+      final GoogleSignInAuthentication gAuth = await gUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: gAuth.accessToken,
+        idToken:     gAuth.idToken,
       );
 
-      return userCred.user;
-    } on FirebaseAuthException catch (e) {
-      print("Email Signup Error: ${e.message}");
+      final userCred = await _auth.signInWithCredential(credential);
+      final user     = userCred.user;
+      if (user == null) return null;
+
+      // Create Firestore doc only if new user
+      final isNew = userCred.additionalUserInfo?.isNewUser ?? false;
+      if (isNew) {
+        await _userService.createUserDoc(AppUser(
+          uid:       user.uid,
+          username:  user.displayName ?? 'Coder${user.uid.substring(0, 4)}',
+          email:     user.email ?? '',
+          avatar:    '🧑‍💻',
+          bio:       '',
+          country:   '',
+          xp:        0,
+          streak:    0,
+          mmr:       1000,
+          createdAt: DateTime.now(),
+        ));
+      }
+      return user;
+    } catch (e) {
+      print('Google Sign In Error: $e');
       return null;
     }
   }
 
-  // ===============================
-  // EMAIL + PASSWORD LOGIN
-  // ===============================
-  Future<User?> signInWithEmail(String email, String password) async {
+  // ── Email Sign Up ─────────────────────────────────────────────────────────
+  Future<AuthResult> signUpWithEmail({
+    required String email,
+    required String password,
+    required String username,
+  }) async {
     try {
-      UserCredential userCred = await _auth.signInWithEmailAndPassword(
-        email: email,
+      final userCred = await _auth.createUserWithEmailAndPassword(
+        email:    email,
         password: password,
       );
+      final user = userCred.user;
+      if (user == null) return AuthResult.error('Signup failed');
 
-      return userCred.user;
+      // Create Firestore user doc
+      await _userService.createUserDoc(AppUser(
+        uid:       user.uid,
+        username:  username,
+        email:     email,
+        avatar:    '🧑‍💻',
+        bio:       '',
+        country:   '',
+        xp:        0,
+        streak:    0,
+        mmr:       1000,
+        createdAt: DateTime.now(),
+      ));
+
+      return AuthResult.success(user);
     } on FirebaseAuthException catch (e) {
-      print("Email Login Error: ${e.message}");
-      return null;
+      return AuthResult.error(_friendlyError(e.code));
     }
   }
 
-  // ===============================
-  // PHONE AUTH - SEND OTP
-  // ===============================
+  // ── Email Sign In ─────────────────────────────────────────────────────────
+  Future<AuthResult> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final userCred = await _auth.signInWithEmailAndPassword(
+        email:    email,
+        password: password,
+      );
+      final user = userCred.user;
+      if (user == null) return AuthResult.error('Login failed');
+      return AuthResult.success(user);
+    } on FirebaseAuthException catch (e) {
+      return AuthResult.error(_friendlyError(e.code));
+    }
+  }
+
+  // ── Phone Auth — Send OTP ─────────────────────────────────────────────────
   Future<void> sendOTP({
     required String phoneNumber,
     required Function(String verificationId) onCodeSent,
@@ -74,41 +116,67 @@ class AuthService {
       phoneNumber: phoneNumber,
       verificationCompleted: (PhoneAuthCredential credential) async {
         await _auth.signInWithCredential(credential);
-        if (onVerificationCompleted != null) {
-          onVerificationCompleted();
-        }
+        onVerificationCompleted?.call();
       },
-      verificationFailed: (FirebaseAuthException e) {
-        onError(e.message ?? "OTP Failed");
-      },
-      codeSent: (String verificationId, int? resendToken) {
-        onCodeSent(verificationId);
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {},
+      verificationFailed: (e) => onError(e.message ?? 'OTP Failed'),
+      codeSent: (verificationId, _) => onCodeSent(verificationId),
+      codeAutoRetrievalTimeout: (_) {},
     );
   }
 
-  // ===============================
-  // PHONE AUTH - VERIFY OTP
-  // ===============================
-  Future<User?> verifyOTP(String verificationId, String smsCode) async {
+  // ── Phone Auth — Verify OTP ───────────────────────────────────────────────
+  Future<AuthResult> verifyOTP(String verificationId, String smsCode) async {
     try {
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+      final credential = PhoneAuthProvider.credential(
         verificationId: verificationId,
-        smsCode: smsCode,
+        smsCode:        smsCode,
       );
-
-      UserCredential userCred = await _auth.signInWithCredential(credential);
-
-      return userCred.user;
+      final userCred = await _auth.signInWithCredential(credential);
+      final user = userCred.user;
+      if (user == null) return AuthResult.error('Verification failed');
+      return AuthResult.success(user);
     } catch (e) {
-      print("OTP Verify Error: $e");
-      return null;
+      return AuthResult.error('OTP Verify Error: $e');
     }
   }
 
+  // ── Password Reset ────────────────────────────────────────────────────────
+  Future<AuthResult> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      return AuthResult.success(null);
+    } on FirebaseAuthException catch (e) {
+      return AuthResult.error(_friendlyError(e.code));
+    }
+  }
+
+  // ── Sign Out ──────────────────────────────────────────────────────────────
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _auth.signOut();
   }
+
+  // ── Friendly error messages ───────────────────────────────────────────────
+  String _friendlyError(String code) {
+    switch (code) {
+      case 'user-not-found':       return 'No account found with this email.';
+      case 'wrong-password':       return 'Incorrect password.';
+      case 'email-already-in-use': return 'An account already exists with this email.';
+      case 'weak-password':        return 'Password must be at least 6 characters.';
+      case 'invalid-email':        return 'Please enter a valid email address.';
+      case 'too-many-requests':    return 'Too many attempts. Please try again later.';
+      default:                     return 'Something went wrong. Please try again.';
+    }
+  }
+}
+
+// ── Result wrapper — replaces nullable User? ─────────────────────────────────
+class AuthResult {
+  final User? user;
+  final String? error;
+  bool get isSuccess => error == null;
+
+  const AuthResult._({this.user, this.error});
+  factory AuthResult.success(User? user) => AuthResult._(user: user);
+  factory AuthResult.error(String msg)   => AuthResult._(error: msg);
 }
