@@ -14,6 +14,7 @@ import '../../../home/domain/level_model.dart';
 import '../../../home/domain/progress_model.dart';
 import '../../../profile/data/user-service.dart';
 import '../../../profile/domain/user_model.dart';
+import 'battle_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PALETTE
@@ -175,7 +176,6 @@ class _LevelMapPageState extends State<LevelMapPage> with TickerProviderStateMix
       if (allLocked && levels.isNotEmpty) {
         // Directly update the first level's document to 'active'
         await _progSvc.forceActivate(uid, levels.first.id);
-
         progMap = await _progSvc.getUserProgress(uid);
       }
 
@@ -706,7 +706,25 @@ class _LevelScreenState extends State<LevelScreen> with TickerProviderStateMixin
                     isDone: _isDone, tagColor: tc, p: p,
                     onTap: () {
                       HapticFeedback.heavyImpact();
-                      // context.push('/battle/${widget.level.id}');
+                      Navigator.of(context).push(
+                        PageRouteBuilder(
+                          transitionDuration: const Duration(milliseconds: 500),
+                          pageBuilder: (_, anim, __) => BattleScreen(
+                            level: widget.level,
+                            progress: widget.progress,
+                          ),
+                          transitionsBuilder: (_, anim, __, child) =>
+                              FadeTransition(
+                                opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
+                                child: SlideTransition(
+                                  position: Tween<Offset>(
+                                      begin: const Offset(0, 0.04), end: Offset.zero)
+                                      .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+                                  child: child,
+                                ),
+                              ),
+                        ),
+                      );
                     },
                   ), 0.50),
 
